@@ -1,0 +1,133 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+
+model User {
+  id String @id @default(uuid())
+  firstName String
+  lastName String
+  email String @unique
+  password String
+  role String
+  roleId Role @relation(fields: [role], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  teams Team[]
+}
+
+model Customer {
+  id String @id @default(uuid())
+  firstName String
+  lastName String
+  email String? @unique
+  phone String @unique
+  password String
+  city String
+  neighborhood String
+  address String
+  type CustomerType 
+  transactions Transaction[]
+  missions Mission[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Role {
+  id String @id @default(uuid())
+  name String 
+  users User[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Team {
+  id String @id @default(uuid())
+  name String
+  users User[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+}
+
+model Transaction {
+   id String @id @default(uuid())
+   amount Decimal
+   transactionId String
+   status PaymentStatus
+   missionId String
+   customerId String
+   madeBy Customer @relation(fields: [customerId], references: [id])
+   transationOf Mission @relation(fields: [missionId], references: [id])
+   bill Bill? 
+   createdAt DateTime @default(now())
+   updatedAt DateTime @updatedAt
+}
+
+
+model Bill {
+  id String @id @default(uuid())
+  billNumber String @unique
+  transactionId String @unique
+  billOf Transaction @relation(fields: [transactionId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Mission {
+  id String @id @default(uuid())
+  city String
+  neighborhood String
+  address String
+  description String 
+  status String
+  provisionnalBudget Decimal
+  type MissionType
+  withBox Boolean
+  deliveryPlace String
+  finalPrice Decimal
+  customerId String
+  transactions Transaction[]
+  orderedBy Customer @relation(fields: [customerId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum CustomerType  {
+  ENTREPRISE
+  INDIVIDUAL
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum MissionType {
+  MOVEOUT
+  HOUSECLEANING
+  DELIVERY 
+  SERVICE
+}
+
+enum MissionStatus {
+  NEW
+  PRICE_SET
+  PLANNED
+  ONGOING
+  DONE
+  REJECTED
+}
