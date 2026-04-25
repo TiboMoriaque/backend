@@ -20,11 +20,12 @@ model User {
   lastName String
   email String @unique
   password String
-  role String
-  roleId Role @relation(fields: [role], references: [id])
+  roleId String
+  role Role @relation(fields: [roleId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   teams Team[]
+  missions Mission[]
 }
 
 model Customer {
@@ -37,6 +38,8 @@ model Customer {
   city String
   neighborhood String
   address String
+  rccm String?
+  ifu String?
   type CustomerType 
   transactions Transaction[]
   missions Mission[]
@@ -91,14 +94,18 @@ model Mission {
   neighborhood String
   address String
   description String 
-  status String
+  status MissionStatus
   provisionnalBudget Decimal
+  customerDate DateTime
+  adminDate DateTime
   type MissionType
-  withBox Boolean
-  deliveryPlace String
-  finalPrice Decimal
+  withBox Boolean?
+  deliveryPlace String?
+  finalPrice Decimal?
   customerId String
   transactions Transaction[]
+  userId String
+  user User @relation(fields: [userId], references: [id])
   orderedBy Customer @relation(fields: [customerId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -126,6 +133,7 @@ enum MissionType {
 enum MissionStatus {
   NEW
   PRICE_SET
+  PRICE_AGREED
   PLANNED
   ONGOING
   DONE
