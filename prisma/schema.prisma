@@ -26,6 +26,7 @@ model User {
   updatedAt DateTime @updatedAt
   teams Team[]
   missions Mission[]
+  
 }
 
 model Customer {
@@ -59,6 +60,7 @@ model Team {
   id String @id @default(uuid())
   name String
   users User[]
+  missions Mission[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   
@@ -97,15 +99,17 @@ model Mission {
   status MissionStatus
   provisionnalBudget Decimal
   customerDate DateTime
-  adminDate DateTime
+  adminDate DateTime?
   type MissionType
-  withBox Boolean?
+  withBox Boolean
   deliveryPlace String?
   finalPrice Decimal?
   customerId String
+  teamId String?
+  team Team? @relation(fields: [teamId], references: [id])
   transactions Transaction[]
-  userId String
-  user User @relation(fields: [userId], references: [id])
+  userId String?
+  user User? @relation(fields: [userId], references: [id])
   orderedBy Customer @relation(fields: [customerId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

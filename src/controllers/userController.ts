@@ -4,7 +4,7 @@ import { prisma } from "../config/db";
 const getConnectedUser = async (req: Request, res: Response) => {
   const user = await prisma.user.findUnique({
     where: { id: req.user.id },
-    include: { roleId: true },
+    include: { role: true },
   });
   if (!user) {
     return res.status(404).json({ error: "Utilisateur non trouvé" });
@@ -17,14 +17,14 @@ const getConnectedUser = async (req: Request, res: Response) => {
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
-        role: user.roleId,
+        role: user.role,
       },
     },
   });
 };
 
 const getUsers = async (req: Request, res: Response) => {
-  if (req.user.roleId.name !== "ADMIN") {
+  if (req.user.role.name !== "ADMIN") {
     return res.status(401).json({
       error: "Vous n'êtes pas autorisé(e) à accéder à cette ressource",
     });
@@ -32,15 +32,20 @@ const getUsers = async (req: Request, res: Response) => {
 
   const users = await prisma.user.findMany({
     where: { id: { not: req.user.id } },
-    include: { roleId: true, teams: true },
+    include: {
+      role: true,
+      teams: { include: { missions: true } },
+      missions: true,
+    },
   });
   const formatedUser = users.map((user) => ({
     id: user.id,
     firstName: user.firstName,
     lastName: user.lastName,
     email: user.email,
-    role: user.roleId,
+    role: user.role,
     teams: user.teams,
+    missions: user.missions,
   }));
   res.status(200).json({
     status: "Success",

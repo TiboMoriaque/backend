@@ -26,6 +26,21 @@ type CreateMissionBody = {
   customerId: string;
 };
 
+type UpdateMissionBody = {
+  adminDate?: string;
+  status?:
+    | "NEW"
+    | "PRICE_SET"
+    | "PRICE_AGREED"
+    | "PLANNED"
+    | "ONGOING"
+    | "DONE"
+    | "REJECTED";
+  finalPrice?: number;
+  teamId?: string;
+  userId?: string;
+};
+
 const createMission = async (
   req: TypedRequest<CreateMissionBody>,
   res: Response,
@@ -43,7 +58,6 @@ const createMission = async (
     finalPrice,
     customerId,
     customerDate,
-    adminDate,
   } = req.body;
 
   const mission = await prisma.mission.create({
@@ -60,7 +74,6 @@ const createMission = async (
       finalPrice,
       customerId,
       customerDate,
-      adminDate,
     },
   });
   res.status(201).json({
@@ -77,7 +90,9 @@ const getMissions = async (req: Request, res: Response) => {
       .status(401)
       .json({ error: "Vous n'êtes pas autorisé à accéder à ces ressources" });
   }
-  const missions = await prisma.mission.findMany();
+  const missions = await prisma.mission.findMany({
+    include: { team: true, user: true, orderedBy: true },
+  });
   res.status(200).json({
     status: "Success",
     data: {
@@ -86,4 +101,27 @@ const getMissions = async (req: Request, res: Response) => {
   });
 };
 
-export { createMission, getMissions };
+const updateMission = async (
+  req: TypedRequest<UpdateMissionBody>,
+  res: Response,
+) => {
+  const { adminDate, status, finalPrice, userId, teamId } = req.body;
+  const existingMission = await prisma.mission.findUnique({
+    where: { id: req.params.id },
+  });
+  if (!existingMission) {
+    return res.status(404).json({ error: "Mission non trouvée" });
+  }
+  const updatedMission = await prisma.mission.update({
+    where: { id: req.params.id },
+    data: { adminDate, status, finalPrice, userId, teamId },
+  });
+  res.status(200).json({
+    status: "Success",
+    data: {
+      mission: updatedMission,
+    },
+  });
+};
+
+export { createMission, getMissions, updateMission };

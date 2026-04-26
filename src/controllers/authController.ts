@@ -10,6 +10,7 @@ type RegisterBody = {
   lastName: string;
   email: string;
   password: string;
+  roleId: string;
   role: string;
 };
 
@@ -19,7 +20,7 @@ type LoginBody = {
 };
 
 const register = async (req: TypedRequest<RegisterBody>, res: Response) => {
-  const { email, password, firstName, lastName, role } = req.body;
+  const { email, password, firstName, lastName, roleId, role } = req.body;
 
   const userExists = await prisma.user.findUnique({ where: { email } });
 
@@ -35,7 +36,7 @@ const register = async (req: TypedRequest<RegisterBody>, res: Response) => {
       password: hashedPassword,
       firstName,
       lastName,
-      role,
+      roleId,
     },
   });
   const token = generateToken(user.id, res);
@@ -50,7 +51,7 @@ const login = async (req: TypedRequest<LoginBody>, res: Response) => {
   const { email, password } = req.body;
   const user = await prisma.user.findUnique({
     where: { email },
-    include: { roleId: true },
+    include: { role: true },
   });
   if (!user) {
     return res.status(401).json({ error: "Email ou mot de passe incorrecte1" });
