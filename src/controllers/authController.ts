@@ -11,7 +11,6 @@ type RegisterBody = {
   email: string;
   password: string;
   roleId: string;
-  role: string;
 };
 
 type LoginBody = {
@@ -20,7 +19,7 @@ type LoginBody = {
 };
 
 const register = async (req: TypedRequest<RegisterBody>, res: Response) => {
-  const { email, password, firstName, lastName, roleId, role } = req.body;
+  const { email, password, firstName, lastName, roleId } = req.body;
 
   const userExists = await prisma.user.findUnique({ where: { email } });
 
